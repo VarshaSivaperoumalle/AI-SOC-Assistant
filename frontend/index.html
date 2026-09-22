@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — AI SOC Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="alternate icon" href="assets/favicon.svg">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="shell.css">
+</head>
+<body data-page="dashboard">
+
+<div class="app-shell">
+
+  <nav class="sidenav">
+    <div class="sidenav-brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+          <path d="M16 2L28 7V15.5C28 22.5 22.9 28.2 16 30C9.1 28.2 4 22.5 4 15.5V7L16 2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <circle cx="16" cy="11.5" r="1.5" fill="currentColor"/>
+          <circle cx="10.5" cy="18.5" r="1.5" fill="currentColor"/>
+          <circle cx="21.5" cy="18.5" r="1.5" fill="currentColor"/>
+          <path d="M16 11.5L10.5 18.5M16 11.5L21.5 18.5M10.5 18.5L21.5 18.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="sidenav-brand-text">
+        <strong>AI SOC Assistant</strong>
+        <span>Incident triage console</span>
+      </div>
+    </div>
+
+    <div class="sidenav-links">
+      <a class="nav-link" data-page="dashboard" href="index.html">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7L8 2L14 7V14H9.5V10H6.5V14H2V7Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" data-page="analysis" href="analysis.html">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1V4M7.5 11V14M1 7.5H4M11 7.5H14M3.3 3.3L5.4 5.4M9.6 9.6L11.7 11.7M11.7 3.3L9.6 5.4M5.4 9.6L3.3 11.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Incident Analysis
+      </a>
+      <a class="nav-link" data-page="history" href="history.html">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V8L10.3 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Incident History
+      </a>
+      <a class="nav-link" data-page="analytics" href="analytics.html">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 14V2M2 14H14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="4.5" y="8" width="2" height="4.5" fill="currentColor"/><rect x="8" y="5" width="2" height="7.5" fill="currentColor"/><rect x="11.5" y="10" width="2" height="2.5" fill="currentColor"/></svg>
+        Threat Analytics
+      </a>
+      <a class="nav-link" data-page="ai-analysis" href="ai-analysis.html">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L9.6 5.9L14 7.5L9.6 9.1L8 13.5L6.4 9.1L2 7.5L6.4 5.9L8 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        AI Analysis
+      </a>
+      <a class="nav-link" data-page="threat-intel" href="threat-intel.html">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14 4V8.2C14 11.7 11.5 14.3 8 15C4.5 14.3 2 11.7 2 8.2V4L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Threat Intelligence
+      </a>
+      <a class="nav-link" data-page="system" href="system.html">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M1 8H4.5L6 4L9 12L10.5 8H15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        System / Health
+      </a>
+    </div>
+</nav>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="status-cluster" id="statusCluster">
+          <div class="status-chip" id="chip-api" data-state="unknown"><span class="dot"></span><span class="chip-label">FastAPI</span></div>
+          <div class="status-chip" id="chip-xgb" data-state="unknown"><span class="dot"></span><span class="chip-label">XGBoost</span></div>
+          <div class="status-chip" id="chip-rag" data-state="unknown"><span class="dot"></span><span class="chip-label">FAISS RAG</span></div>
+          <div class="status-chip" id="chip-llm" data-state="unknown"><span class="dot"></span><span class="chip-label">Llama 3.2</span></div>
+          <button class="refresh-btn" id="refreshHealthBtn" title="Re-check backend health">
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M13 7.5A5.5 5.5 0 1 1 11.6 3.9M13 1.5V5H9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>What's happening — incidents analyzed, threats detected, current risk situation.</p>
+      </div>
+
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><div class="stat-label">Total incidents</div><div class="stat-value" id="statTotal">0</div></div>
+        <div class="stat-card stat-benign"><div class="stat-label">Benign</div><div class="stat-value" id="statBenign">0</div></div>
+        <div class="stat-card stat-suspicious"><div class="stat-label">Suspicious</div><div class="stat-value" id="statSuspicious">0</div></div>
+        <div class="stat-card stat-malicious"><div class="stat-label">Malicious</div><div class="stat-value" id="statMalicious">0</div></div>
+        <div class="stat-card"><div class="stat-label">Average risk score</div><div class="stat-value" id="statAvgRisk">—</div></div>
+      </div>
+
+      <div class="dash-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Recent incidents</h2>
+            <span class="panel-sub">latest 8, this browser's local history</span>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Time</th><th>Attack Type</th><th>Threat class</th><th>Confidence</th><th>Risk</th><th>Status</th></tr></thead>
+              <tbody id="recentBody">
+                <tr class="empty-row"><td colspan="6">No incidents recorded yet. Run an analysis on the Incident Analysis page.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Threat distribution</h2>
+            <span class="panel-sub">by class</span>
+          </div>
+          <div id="distChart"><div class="chart-empty">No data available.</div></div>
+
+          <div class="panel-head" style="margin-top:20px;">
+            <h2>Risk overview</h2>
+            <span class="panel-sub">current average</span>
+          </div>
+          <div id="riskOverview">
+            <div class="risk-bar-track"><div class="risk-bar-fill" id="dashRiskFill" style="width:0%"></div></div>
+            <p style="margin:10px 0 0; font-size:12px; color:var(--text-low);" id="riskOverviewNote">No incidents analyzed yet.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>

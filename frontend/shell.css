@@ -1,0 +1,413 @@
+/* =========================================================
+   APP SHELL — sidebar navigation + topbar + page content
+   Loaded on every page, after style.css.
+========================================================= */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------------- Sidebar ---------------- */
+.sidenav {
+  width: 224px;
+  flex-shrink: 0;
+  background: var(--sidenav-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidenav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 15px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.sidenav-brand .brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidenav-brand-text strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-hi);
+  line-height: 1.2;
+}
+
+.sidenav-brand-text span {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-low);
+  margin-top: 1px;
+}
+
+.sidenav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 10px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px 9px 8px;
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+}
+
+.nav-link:hover { background: rgba(14, 110, 115, 0.08); color: var(--text-hi); }
+
+.nav-link.active {
+  background: rgba(14, 110, 115, 0.16);
+  border-left-color: var(--accent);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.nav-link svg { flex-shrink: 0; opacity: 0.85; }
+
+.sidenav-foot {
+  margin-top: auto;
+  padding: 12px 16px 16px;
+  font-size: 10.5px;
+  color: var(--text-low);
+  line-height: 1.5;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* ---------------- Main column ---------------- */
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-inner {
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.page-content {
+  flex: 1;
+  padding: 22px 26px 44px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-hi);
+}
+
+.page-header p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-low);
+}
+
+/* ---------------- Dashboard: stat cards ---------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 15px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-low);
+  margin-bottom: 7px;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--text-hi);
+}
+
+.stat-card.stat-benign .stat-value { color: var(--benign); }
+.stat-card.stat-suspicious .stat-value { color: var(--suspicious); }
+.stat-card.stat-malicious .stat-value { color: var(--malicious); }
+
+/* ---------------- Two-column dashboard grid ---------------- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------------- Generic data table ---------------- */
+.data-table-wrap { overflow-x: auto; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.data-table thead th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-low);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table tbody td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-mid);
+}
+
+.data-table tbody tr:hover { background: var(--panel-alt); }
+
+.data-table .empty-row td {
+  text-align: center;
+  color: var(--text-low);
+  padding: 26px 10px;
+}
+
+.class-benign { color: var(--benign); font-weight: 600; }
+.class-suspicious { color: var(--suspicious); font-weight: 600; }
+.class-malicious { color: var(--malicious); font-weight: 600; }
+.class-unknown { color: var(--text-low); font-weight: 600; }
+
+.sev-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.sev-dot-benign { background: var(--benign); }
+.sev-dot-suspicious { background: var(--suspicious); }
+.sev-dot-malicious { background: var(--malicious); }
+.sev-dot-unknown { background: var(--unknown); }
+
+/* ---------------- Filter / toolbar controls ---------------- */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.filter-bar input[type="text"],
+.filter-bar select,
+.status-select {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-hi);
+  padding: 7px 9px;
+}
+
+.filter-bar input[type="text"] { min-width: 190px; }
+
+.status-select {
+  padding: 5px 7px;
+  font-size: 12px;
+}
+
+.status-select[data-status="New"] { color: var(--accent-strong); }
+.status-select[data-status="Investigating"] { color: var(--suspicious); }
+.status-select[data-status="Resolved"] { color: var(--benign); }
+.status-select[data-status="False Positive"] { color: var(--text-low); }
+
+/* ---------------- Simple bar charts (no chart library) ---------------- */
+.hbar-chart { display: flex; flex-direction: column; gap: 12px; }
+
+.hbar-row { display: flex; align-items: center; gap: 10px; }
+
+.hbar-label {
+  width: 92px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-mid);
+}
+
+.hbar-track {
+  flex: 1;
+  height: 14px;
+  background: var(--panel-alt);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.hbar-fill { height: 100%; border-radius: 3px; }
+.hbar-fill.benign { background: var(--benign); }
+.hbar-fill.suspicious { background: var(--suspicious); }
+.hbar-fill.malicious { background: var(--malicious); }
+
+.hbar-count {
+  width: 30px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-mid);
+}
+
+.vbar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 160px;
+  padding-top: 10px;
+}
+
+.vbar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.vbar-bar {
+  width: 100%;
+  max-width: 34px;
+  background: var(--accent);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+}
+
+.vbar-tick {
+  font-size: 10px;
+  color: var(--text-low);
+  white-space: nowrap;
+}
+
+.chart-empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: var(--text-low);
+  font-size: 12.5px;
+}
+
+/* ---------------- Detail / info cards ---------------- */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.info-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 15px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-hi);
+}
+
+.info-card p {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-mid);
+}
+.info-card p:last-child { margin-bottom: 0; }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.tag {
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text-mid);
+}
+
+.tag.tag-suspicious { border-color: rgba(163,102,15,0.35); background: var(--suspicious-soft); color: var(--suspicious); }
+.tag.tag-malicious { border-color: rgba(179,38,30,0.35); background: var(--malicious-soft); color: var(--malicious); }
+
+.not-available {
+  font-size: 12px;
+  color: var(--text-low);
+  font-style: italic;
+  padding: 10px 0;
+}
+.data-table .not-available,
+.attack-type-value.not-available .not-available {
+  padding: 0;
+}
+
+/* ---------------- Responsive: collapse sidebar on small screens ---------------- */
+@media (max-width: 900px) {
+  .app-shell { flex-direction: column; }
+  .sidenav { width: 100%; height: auto; position: static; }
+  .sidenav-links { flex-direction: row; flex-wrap: wrap; }
+  .page-content { padding: 18px 16px 32px; }
+}

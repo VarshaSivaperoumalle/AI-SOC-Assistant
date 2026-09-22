@@ -1,0 +1,857 @@
+============================================================
+AI SOC ASSISTANT
+SECURITY KNOWLEDGE BASE
+Version 1.0
+============================================================
+
+PURPOSE
+This knowledge base provides grounded cybersecurity information
+for the AI SOC Assistant. It is used by the Retrieval-Augmented
+Generation (RAG) component to explain machine-learning predictions,
+support incident triage, identify likely attack categories, provide
+MITRE ATT&CK context, and recommend investigation actions.
+
+IMPORTANT GROUNDING RULE
+The machine-learning model predicts the threat class from network
+flow features. The knowledge base does not independently prove that
+an attack occurred. The LLM must distinguish between:
+1. ML prediction
+2. Security interpretation
+3. Confirmed evidence
+
+The assistant must never claim that an incident is confirmed solely
+because the XGBoost model predicted MALICIOUS.
+
+============================================================
+1. THREAT CLASSIFICATION
+============================================================
+
+BENIGN
+Definition:
+BENIGN represents network activity that the ML model considers
+consistent with legitimate or non-malicious traffic.
+
+Examples:
+- Normal web browsing
+- Legitimate application communication
+- DNS communication
+- Normal file transfer
+- Routine client-server communication
+- Expected internal network traffic
+
+Triage:
+Usually low priority unless other evidence contradicts the prediction.
+
+Important:
+BENIGN does not guarantee that an event is safe. A malicious activity
+can sometimes resemble normal traffic or be outside the training
+distribution.
+
+------------------------------------------------------------
+
+SUSPICIOUS
+Definition:
+SUSPICIOUS represents activity that requires additional investigation
+but does not necessarily establish that an attack occurred.
+
+Examples:
+- Reconnaissance-like behavior
+- Port scanning
+- Automated communication
+- Unusual connection patterns
+- Bot-related traffic
+- Abnormal traffic volume or timing
+
+Triage:
+Review the source and destination, timing, frequency, affected ports,
+protocols, and related security events.
+
+Important:
+Suspicious activity should not automatically be described as malicious.
+
+------------------------------------------------------------
+
+MALICIOUS
+Definition:
+MALICIOUS represents network-flow behavior that the ML model strongly
+associates with an attack category represented in the training data.
+
+Examples:
+- DDoS
+- DoS
+- Brute-force attacks
+- Web attacks
+- Other attack traffic represented by the dataset
+
+Triage:
+High priority. Investigate the affected host, source, destination,
+time window, related connections, authentication events, and other
+security telemetry.
+
+Important:
+MALICIOUS is an ML classification, not independent proof of compromise.
+
+============================================================
+2. CIC-IDS2017 ATTACK CATEGORIES
+============================================================
+
+The project uses CIC-IDS2017 network-flow data.
+
+Relevant attack labels in the prepared project dataset include:
+
+- DDoS
+- PortScan
+- Bot
+- Infiltration
+- Web Attack - Brute Force
+- Web Attack - XSS
+- Web Attack - Sql Injection
+- FTP-Patator
+- SSH-Patator
+- DoS Hulk
+- DoS slowloris
+- DoS Slowhttptest
+- DoS GoldenEye
+- Heartbleed
+- BENIGN
+
+The project maps these into three higher-level classes:
+
+BENIGN
+Normal traffic.
+
+SUSPICIOUS
+PortScan and Bot traffic.
+
+MALICIOUS
+Other attack categories.
+
+This mapping is project-specific and must be preserved when explaining
+the model output.
+
+============================================================
+3. PORT SCANNING
+============================================================
+
+Definition:
+Port scanning is reconnaissance activity used to discover accessible
+ports and services on a host.
+
+Security objective:
+Attackers can use scanning to identify potential targets and services
+before exploitation.
+
+Possible network indicators:
+- Connections to many destination ports
+- Repeated connections to a host
+- Short-lived connections
+- Repeated connection attempts
+- Connections distributed across services
+- Unusual connection patterns from a single source
+
+Potential interpretation:
+Port scanning can represent reconnaissance rather than exploitation.
+
+Project classification:
+PortScan is mapped to SUSPICIOUS.
+
+Triage actions:
+1. Identify the scanning source.
+2. Identify the destination host or subnet.
+3. Determine the number of ports contacted.
+4. Examine the time window.
+5. Check whether scanning was internal or external.
+6. Search for later exploitation attempts.
+7. Check endpoint and firewall logs.
+
+MITRE ATT&CK context:
+Port scanning is commonly associated with network service discovery
+and reconnaissance activity.
+
+Do not claim:
+"Port scanning proves compromise."
+
+============================================================
+4. BOT ACTIVITY
+============================================================
+
+Definition:
+A bot is an automated program or compromised system that performs
+automated network activity.
+
+Possible indicators:
+- Repeated automated connections
+- Periodic communication
+- Unusual destination patterns
+- High-frequency requests
+- Communication inconsistent with normal host behavior
+- Connections to suspicious infrastructure
+
+Project classification:
+Bot is mapped to SUSPICIOUS.
+
+Triage actions:
+1. Identify the originating host.
+2. Determine whether the host is expected to run automation.
+3. Examine destination addresses and domains.
+4. Check process and endpoint telemetry.
+5. Review DNS activity.
+6. Search for persistence or malware indicators.
+7. Look for command-and-control behavior.
+
+Important:
+Automated traffic is not automatically malicious. Legitimate monitoring,
+backup, update, and automation systems can generate similar patterns.
+
+============================================================
+5. DDoS
+============================================================
+
+Definition:
+Distributed Denial-of-Service (DDoS) attacks attempt to disrupt
+availability by overwhelming a target with traffic or requests.
+
+Possible indicators:
+- Very high traffic volume
+- Large number of connections
+- Many sources targeting one destination
+- Abnormally high packet or byte rates
+- Sudden traffic spikes
+- Service degradation
+
+Project classification:
+DDoS is mapped to MALICIOUS.
+
+Triage actions:
+1. Identify the targeted service.
+2. Identify source IP distribution.
+3. Determine traffic volume and duration.
+4. Examine affected protocols and ports.
+5. Check whether service availability was affected.
+6. Review firewall, load balancer, IDS/IPS, and application logs.
+7. Consider rate limiting, filtering, or upstream mitigation.
+
+Important:
+High traffic volume alone does not prove DDoS. Legitimate traffic
+surges and flash crowds can produce similar symptoms.
+
+============================================================
+6. DENIAL-OF-SERVICE ATTACKS
+============================================================
+
+Definition:
+Denial-of-Service attacks attempt to reduce or prevent availability
+of a service or system.
+
+Dataset examples:
+- DoS Hulk
+- DoS slowloris
+- DoS Slowhttptest
+- DoS GoldenEye
+
+------------------------------------------------------------
+DoS Hulk
+------------------------------------------------------------
+
+DoS Hulk is an HTTP-based denial-of-service attack pattern represented
+in CIC-IDS2017.
+
+Possible indicators:
+- Large numbers of HTTP requests
+- High request frequency
+- Repeated connections to a web service
+- Abnormal HTTP traffic volume
+
+Triage:
+Inspect the targeted web service, source distribution, request rate,
+server resource utilization, and application logs.
+
+------------------------------------------------------------
+Slowloris
+------------------------------------------------------------
+
+Slowloris is a denial-of-service technique that attempts to exhaust
+server resources using many slow or incomplete HTTP connections.
+
+Possible indicators:
+- Many persistent connections
+- Slow/incomplete HTTP requests
+- Connection exhaustion
+- Abnormally long connection duration
+
+Triage:
+Review concurrent connections, connection duration, web-server logs,
+and server resource usage.
+
+------------------------------------------------------------
+SlowHTTPTest
+------------------------------------------------------------
+
+SlowHTTPTest-style attacks use deliberately slow HTTP communication
+to consume server resources.
+
+Triage:
+Examine incomplete requests, connection duration, request rate,
+server resource utilization, and affected endpoints.
+
+------------------------------------------------------------
+GoldenEye
+------------------------------------------------------------
+
+GoldenEye is a denial-of-service attack tool/traffic pattern designed
+to generate large numbers of HTTP requests against a target.
+
+Triage:
+Examine request volume, target service availability, source patterns,
+and web-server logs.
+
+Important:
+The exact attack subtype should only be reported when supported by
+the ML label or other evidence.
+
+============================================================
+7. BRUTE-FORCE ATTACKS
+============================================================
+
+Definition:
+A brute-force attack repeatedly attempts authentication or credential
+combinations to gain unauthorized access.
+
+Dataset examples:
+- FTP-Patator
+- SSH-Patator
+- Web Attack - Brute Force
+
+Possible indicators:
+- Repeated authentication attempts
+- Multiple failed logins
+- High login frequency
+- Attempts against many accounts
+- Attempts from unusual sources
+- Repeated connections to authentication services
+
+Project interpretation:
+Brute-force categories are mapped to MALICIOUS.
+
+Triage actions:
+1. Identify source IP.
+2. Identify targeted account(s).
+3. Count failed and successful attempts.
+4. Check authentication logs.
+5. Determine whether credentials were compromised.
+6. Check for successful login after repeated failures.
+7. Investigate the source host.
+8. Consider account lockout or rate limiting.
+
+Important:
+Repeated failed logins can also be caused by misconfigured applications,
+users entering incorrect passwords, or automated legitimate systems.
+
+============================================================
+8. FTP-PATATOR
+============================================================
+
+FTP-Patator represents automated brute-force activity against FTP.
+
+Potential indicators:
+- Repeated FTP connections
+- Repeated authentication attempts
+- High frequency of login attempts
+- Multiple credential attempts against an FTP service
+
+Triage:
+Review FTP authentication logs, source addresses, targeted accounts,
+successful authentication events, and subsequent file activity.
+
+============================================================
+9. SSH-PATATOR
+============================================================
+
+SSH-Patator represents automated brute-force activity against SSH.
+
+Potential indicators:
+- Repeated SSH connections
+- Multiple authentication failures
+- High-frequency login attempts
+- Attempts from unusual source addresses
+
+Triage:
+Review SSH authentication logs, successful logins, account activity,
+source IP reputation, and post-login processes.
+
+Important:
+A successful SSH login following brute-force attempts significantly
+increases the importance of investigation.
+
+============================================================
+10. WEB ATTACKS
+============================================================
+
+Definition:
+Web attacks target web applications or web services.
+
+Project examples:
+- Web Attack - Brute Force
+- Web Attack - XSS
+- Web Attack - Sql Injection
+
+Web attacks require application-layer investigation. Network-flow
+classification alone may not contain the complete HTTP request or
+application context.
+
+============================================================
+11. SQL INJECTION
+============================================================
+
+Definition:
+SQL injection attempts to manipulate an application's database query
+through malicious input.
+
+Possible indicators:
+- Suspicious database-oriented input
+- Unexpected SQL syntax in parameters
+- Repeated abnormal requests
+- Requests targeting vulnerable parameters
+- Database errors following suspicious requests
+
+Triage:
+1. Review HTTP requests.
+2. Identify the affected application and parameter.
+3. Examine web-server logs.
+4. Review application logs.
+5. Check database logs.
+6. Determine whether a query executed successfully.
+7. Search for data access or modification.
+
+Important:
+Do not claim successful SQL injection solely from an ML prediction.
+Application and database evidence should be examined.
+
+MITRE ATT&CK context:
+Application-layer exploitation may map to exploitation techniques
+depending on the confirmed behavior and environment.
+
+============================================================
+12. CROSS-SITE SCRIPTING (XSS)
+============================================================
+
+Definition:
+Cross-site scripting involves injecting client-side script into
+content delivered by a web application.
+
+Possible indicators:
+- Suspicious script-like input
+- Unexpected HTML/JavaScript content
+- Repeated requests containing script payload patterns
+- Abnormal requests to input fields
+
+Triage:
+Review the HTTP request, application logs, response behavior, affected
+parameter, and whether the payload was stored or reflected.
+
+Important:
+A string resembling script syntax does not by itself prove successful
+XSS execution.
+
+============================================================
+13. WEB BRUTE FORCE
+============================================================
+
+Web brute-force activity involves repeated attempts to authenticate
+to a web application.
+
+Indicators:
+- Repeated login attempts
+- Many failed authentication responses
+- High request frequency
+- Attempts against multiple usernames
+
+Triage:
+Review application authentication logs and determine whether a
+successful login occurred.
+
+============================================================
+14. INFILTRATION
+============================================================
+
+Definition:
+Infiltration represents attack traffic associated with unauthorized
+access or malicious activity inside a network.
+
+Project classification:
+Infiltration is mapped to MALICIOUS.
+
+Triage:
+1. Identify the affected internal host.
+2. Examine inbound and outbound connections.
+3. Review endpoint processes.
+4. Review authentication activity.
+5. Search for lateral movement.
+6. Examine persistence mechanisms.
+7. Check for data transfer or exfiltration indicators.
+
+Important:
+The ML prediction should be correlated with endpoint, authentication,
+network, and application evidence before declaring compromise.
+
+============================================================
+15. HEARTBLEED
+============================================================
+
+Definition:
+Heartbleed refers to the OpenSSL TLS heartbeat vulnerability that
+could allow unintended memory disclosure from vulnerable systems.
+
+Project classification:
+Heartbleed is mapped to MALICIOUS.
+
+Triage:
+1. Identify the affected service.
+2. Determine whether vulnerable OpenSSL versions were present.
+3. Review TLS activity.
+4. Check server logs and security telemetry.
+5. Determine whether sensitive information may have been exposed.
+6. Patch or upgrade affected systems where applicable.
+
+Important:
+An ML classification associated with Heartbleed traffic is not by
+itself proof that sensitive information was successfully extracted.
+
+============================================================
+16. MITRE ATT&CK CONTEXT
+============================================================
+
+MITRE ATT&CK is a knowledge base describing adversary tactics and
+techniques based on observed real-world behavior.
+
+The AI SOC Assistant should use ATT&CK as contextual knowledge rather
+than automatically assigning a technique solely from an ML class.
+
+Possible relationships include:
+
+Reconnaissance / Discovery:
+- Network service discovery
+- Network scanning behavior
+
+Credential Access:
+- Brute-force authentication attempts
+
+Initial Access / Exploitation:
+- Exploitation of public-facing applications
+- Exploitation of vulnerable services
+
+Command and Control:
+- Suspicious automated communication
+- Potential command-and-control behavior
+
+Impact:
+- Denial-of-Service
+- Service disruption
+
+Important:
+MITRE ATT&CK mapping must be evidence-based. The assistant should say
+"potentially associated with" when the available evidence does not
+confirm a technique.
+
+============================================================
+17. RISK SCORE INTERPRETATION
+============================================================
+
+The project calculates risk using the predicted class and model
+confidence.
+
+BENIGN:
+risk = confidence × 30
+
+SUSPICIOUS:
+risk = 30 + confidence × 40
+
+MALICIOUS:
+risk = 70 + confidence × 30
+
+Approximate interpretation:
+
+0-30:
+Low-risk prediction range.
+
+30-70:
+Suspicious / moderate-risk range.
+
+70-100:
+High-risk / malicious prediction range.
+
+Important:
+Risk score is a project prioritization score. It is not a universal
+cybersecurity risk standard and must not be presented as one.
+
+============================================================
+18. MODEL CONFIDENCE
+============================================================
+
+Confidence represents the model's estimated probability for the
+predicted class based on its output probabilities.
+
+High confidence does not automatically mean:
+- the incident is confirmed
+- the host is compromised
+- the attack succeeded
+- the attacker is identified
+
+The assistant should combine confidence with:
+- threat class
+- network features
+- attack category
+- affected assets
+- security logs
+- endpoint evidence
+- authentication evidence
+- application evidence
+
+============================================================
+19. INCIDENT TRIAGE PRIORITY
+============================================================
+
+PRIORITY 1 - CRITICAL / IMMEDIATE
+Use when malicious activity is accompanied by strong evidence of
+active compromise, severe service disruption, credential compromise,
+or significant impact.
+
+Recommended actions:
+- Escalate immediately.
+- Preserve evidence.
+- Isolate affected systems when appropriate.
+- Investigate related hosts and accounts.
+- Review security telemetry.
+
+PRIORITY 2 - HIGH
+Use for high-confidence MALICIOUS predictions requiring investigation.
+
+Recommended actions:
+- Investigate source and destination.
+- Correlate related events.
+- Review endpoint and authentication logs.
+- Determine whether the activity succeeded.
+
+PRIORITY 3 - MEDIUM
+Use for SUSPICIOUS activity or uncertain malicious activity.
+
+Recommended actions:
+- Gather additional evidence.
+- Check historical behavior.
+- Identify whether the activity is expected.
+- Search for related alerts.
+
+PRIORITY 4 - LOW
+Use for likely BENIGN activity with no conflicting evidence.
+
+Recommended actions:
+- Monitor.
+- No immediate response unless additional evidence appears.
+
+============================================================
+20. INVESTIGATION CHECKLIST
+============================================================
+
+For every alert, the assistant should consider:
+
+1. What is the predicted threat class?
+2. What is the model confidence?
+3. What is the calculated risk score?
+4. What attack category is suggested?
+5. What source IP is involved?
+6. What destination IP is involved?
+7. What destination port is involved?
+8. Which protocol is involved?
+9. What is the time window?
+10. Is the traffic expected?
+11. Is the source internal or external?
+12. Is the destination a critical asset?
+13. Are there related alerts?
+14. Are authentication failures present?
+15. Was there a successful authentication?
+16. Are endpoint indicators available?
+17. Is there evidence of exploitation?
+18. Is there evidence of persistence?
+19. Is there evidence of lateral movement?
+20. Is there evidence of data exfiltration?
+21. Is there evidence of service disruption?
+
+============================================================
+21. FALSE POSITIVE HANDLING
+============================================================
+
+The assistant must consider legitimate explanations.
+
+Possible causes of false positives:
+- Vulnerability scanners
+- Network monitoring tools
+- Load testing
+- Backup systems
+- Automated administrative tools
+- Software updates
+- Health checks
+- Legitimate high-volume services
+- Misconfigured applications
+- Internal security testing
+
+The assistant should recommend verification rather than immediately
+declaring an incident confirmed.
+
+============================================================
+22. ML MODEL LIMITATIONS
+============================================================
+
+The XGBoost model was trained using CIC-IDS2017-derived network-flow
+data.
+
+Limitations include:
+- Dataset-specific traffic patterns
+- Potential distribution differences in real networks
+- Concept drift
+- Unseen attack types
+- Feature distribution changes
+- Encrypted traffic limitations
+- Missing host/application context
+
+A high prediction probability does not guarantee equivalent accuracy
+in every real-world environment.
+
+The model should be treated as a decision-support component for SOC
+analysts rather than a replacement for human investigation.
+
+============================================================
+23. RAG RESPONSE RULES
+============================================================
+
+The LLM must:
+
+1. Use retrieved knowledge as supporting context.
+2. Prefer project-specific knowledge over generic assumptions.
+3. Clearly distinguish prediction from confirmed evidence.
+4. Avoid inventing logs, IP addresses, users, timestamps, or attacks.
+5. Avoid claiming an attack succeeded without evidence.
+6. Avoid claiming an attacker identity without evidence.
+7. Avoid assigning MITRE techniques without behavioral support.
+8. Mention uncertainty when evidence is incomplete.
+9. Recommend practical investigation steps.
+10. Explain technical findings in analyst-friendly language.
+
+============================================================
+24. RECOMMENDED SOC RESPONSE FORMAT
+============================================================
+
+Every generated analysis should preferably contain:
+
+THREAT CLASS:
+Predicted class from the ML model.
+
+CONFIDENCE:
+Model confidence.
+
+RISK SCORE:
+Project-calculated risk score.
+
+LIKELY ACTIVITY:
+Security interpretation supported by the prediction and retrieved
+knowledge.
+
+WHY IT MATTERS:
+Short explanation of the potential security significance.
+
+MITRE ATT&CK CONTEXT:
+Potential tactic/technique only when supported by available evidence.
+
+INVESTIGATION STEPS:
+Specific actions an analyst should perform.
+
+ASSESSMENT:
+Clearly state whether the activity is:
+- likely benign
+- suspicious and requires investigation
+- likely malicious
+- insufficient evidence for confirmation
+
+============================================================
+25. EXAMPLE ANALYSIS
+============================================================
+
+Input:
+Threat class = SUSPICIOUS
+Confidence = 0.9905
+Risk score = 69.62
+
+Recommended interpretation:
+
+"The model classified the network flow as SUSPICIOUS with high model
+confidence. Under the project's classification scheme, suspicious
+activity includes PortScan and Bot traffic. The result should be
+treated as a high-confidence ML indication rather than proof of
+malicious activity. The analyst should examine the source and
+destination, connection frequency, contacted ports, timing, and
+related security events. If the behavior is consistent with
+reconnaissance or unauthorized scanning, network service discovery
+may be relevant ATT&CK context."
+
+Do not say:
+"The system has confirmed an attack."
+
+============================================================
+26. SECURITY TERMINOLOGY
+============================================================
+
+SOC:
+Security Operations Center.
+
+Alert:
+A notification indicating potentially relevant security activity.
+
+Incident:
+A security event that requires investigation or response.
+
+Triage:
+The process of assessing and prioritizing security alerts.
+
+IOC:
+Indicator of Compromise, such as a suspicious IP address, domain,
+hash, or other observable associated with malicious activity.
+
+TTP:
+Tactics, Techniques, and Procedures describing adversary behavior.
+
+IDS:
+Intrusion Detection System.
+
+IPS:
+Intrusion Prevention System.
+
+SIEM:
+Security Information and Event Management platform used to collect,
+correlate, search, and analyze security events.
+
+RAG:
+Retrieval-Augmented Generation. Relevant knowledge is retrieved and
+provided to an LLM as context before generating a response.
+
+LLM:
+Large Language Model used to generate natural-language explanations
+and analyst assistance.
+
+============================================================
+27. FINAL GROUNDING PRINCIPLE
+============================================================
+
+The AI SOC Assistant is a decision-support system.
+
+ML prediction identifies a likely class.
+RAG provides relevant cybersecurity knowledge.
+The LLM explains the result.
+The analyst validates the conclusion using evidence.
+
+The system must never confuse:
+PREDICTION with PROOF,
+CONTEXT with EVIDENCE,
+or RECOMMENDATION with CONFIRMATION.
+
+============================================================
+END OF KNOWLEDGE BASE
+============================================================
