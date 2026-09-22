@@ -1,47 +1,53 @@
-import faiss
-import pickle
-from sentence_transformers import SentenceTransformer
+import re
+
+KNOWLEDGE_PATH = "knowledge_base/security_knowledge.txt"
 
 
-INDEX_PATH = "knowledge_base/rag_index/security_knowledge.index"
-CHUNKS_PATH = "knowledge_base/rag_index/security_chunks.pkl"
-MODEL_NAME = "all-MiniLM-L6-v2"
+def load_knowledge():
+    with open(KNOWLEDGE_PATH, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    chunks = [
+        chunk.strip()
+        for chunk in re.split(r"\n\s*\n", text)
+        if chunk.strip()
+    ]
+
+    return chunks
 
 
-index = faiss.read_index(INDEX_PATH)
-
-with open(CHUNKS_PATH, "rb") as f:
-    chunks = pickle.load(f)
-
-model = SentenceTransformer(MODEL_NAME)
+chunks = load_knowledge()
 
 
 def retrieve_knowledge(query, top_k=3):
-    query_embedding = model.encode(
-        [query],
-        convert_to_numpy=True
+    query_terms = set(
+        re.findall(r"\b[a-zA-Z0-9_-]+\b", query.lower())
     )
 
-    distances, indices = index.search(
-        query_embedding,
-        top_k
-    )
+    scored = []
 
-    results = []
+    for chunk in chunks:
+        chunk_terms = set(
+            re.findall(r"\b[a-zA-Z0-9_-]+\b", chunk.lower())
+        )
 
-    for distance, index_id in zip(distances[0], indices[0]):
-        results.append({
-            "text": chunks[index_id],
-            "distance": float(distance)
+        score = len(query_terms.intersection(chunk_terms))
+
+        scored.append({
+            "text": chunk,
+            "distance": float(-score)
         })
 
-    return results
+    scored.sort(key=lambda item: item["distance"])
+
+    return scored[:top_k]
 
 
 if __name__ == "__main__":
-    query = "What should a SOC analyst investigate for a suspicious network flow?"
-
-    results = retrieve_knowledge(query, top_k=3)
+    results = retrieve_knowledge(
+        "suspicious network flow investigation",
+        top_k=3
+    )
 
     print("\nRAG RETRIEVAL TEST")
     print("=" * 60)
@@ -50,4 +56,4 @@ if __name__ == "__main__":
         print(f"\nResult {i}")
         print("-" * 60)
         print(result["text"])
-        print(f"Distance: {result['distance']:.4f}")
+        print(f"Score: {-result['distance']}")
