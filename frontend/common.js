@@ -8,7 +8,7 @@
    came from a real POST /predict response.
 ========================================================= */
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://ai-soc-assistant-7dh3.onrender.com";
 const HEALTH_TIMEOUT_MS = 4000;
 const HISTORY_KEY = "soc_incident_history";
 const MAX_HISTORY = 200;
